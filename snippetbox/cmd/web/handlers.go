@@ -3,13 +3,12 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-	log.Println("GET /")
+	logger.Info("GET /")
 
 	w.Header().Add("Server", "Go")
 
@@ -21,7 +20,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Print(err.Error())
+		logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
 		return
@@ -29,7 +28,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
@@ -46,7 +45,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	msg := fmt.Sprintf("Snippet of id %d", id)
 	w.Write([]byte(msg))
 
-	log.Println("GET /snippets/{id}")
+	logger.Info("GET /snippets/{id}")
 }
 
 // Create a new snippet
@@ -55,5 +54,5 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("Create a snippet"))
 
-	log.Println("GET /snippets")
+	logger.Info("GET /snippets")
 }
