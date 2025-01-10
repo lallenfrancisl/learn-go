@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"os"
 
 	log "github.com/lallenfrancisl/snippetbox/internal"
 )
@@ -34,6 +33,5 @@ func main() {
 	logger.Info(fmt.Sprintf("starting server on %s", cfg.addr))
 
 	err := http.ListenAndServe(cfg.addr, mux)
-	logger.Error(err.Error())
-	os.Exit(1)
+	logger.Fatal(err.Error())
 }
