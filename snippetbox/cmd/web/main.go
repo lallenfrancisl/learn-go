@@ -13,8 +13,11 @@ type Config struct {
 	assets string
 }
 
+type Application struct {
+	logger *log.Logger
+}
+
 var cfg Config
-var logger = log.New()
 
 func main() {
 	flag.StringVar(&cfg.addr, "addr", ":4000", "HTTP network address")
@@ -25,13 +28,20 @@ func main() {
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir(cfg.assets))
 
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("GET /snippets/{id}", snippetView)
-	mux.HandleFunc("POST /snippets", snippetCreate)
+	app := Application{
+		logger: log.New(),
+	}
 
-	logger.Info(fmt.Sprintf("starting server on %s", cfg.addr))
+	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.HandleFunc("/{$}", app.home)
+	mux.HandleFunc("GET /snippets/{id}", app.snippetView)
+	mux.HandleFunc("POST /snippets", app.snippetCreate)
+
+	app.logger.Info(fmt.Sprintf("server started at %s", cfg.addr))
 
 	err := http.ListenAndServe(cfg.addr, mux)
-	logger.Fatal(err.Error())
+
+	if err != nil {
+		app.logger.Fatal(err.Error())
+	}
 }

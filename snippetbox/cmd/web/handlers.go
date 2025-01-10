@@ -7,20 +7,20 @@ import (
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
-	logger.Info("GET /")
+func (app *Application) home(w http.ResponseWriter, r *http.Request) {
+	app.logger.Info("GET /")
 
 	w.Header().Add("Server", "Go")
 
 	files := []string{
-	    "./ui/html/partials/nav.tmpl.html",
-	    "./ui/html/base.tmpl.html",
-	    "./ui/html/pages/home.tmpl.html",
+		"./ui/html/partials/nav.tmpl.html",
+		"./ui/html/base.tmpl.html",
+		"./ui/html/pages/home.tmpl.html",
 	}
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		logger.Error(err.Error())
+		app.logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
 		return
@@ -28,13 +28,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		logger.Error(err.Error())
+		app.logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
 // Show a specific snippet by id
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
@@ -45,14 +45,14 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	msg := fmt.Sprintf("Snippet of id %d", id)
 	w.Write([]byte(msg))
 
-	logger.Info("GET /snippets/{id}")
+	app.logger.Info("GET /snippets/{id}")
 }
 
 // Create a new snippet
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	w.Write([]byte("Create a snippet"))
 
-	logger.Info("GET /snippets")
+	app.logger.Info("GET /snippets")
 }
