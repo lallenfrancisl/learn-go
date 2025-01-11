@@ -1,11 +1,22 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"runtime/debug"
+)
 
 // Logs an error and sends a generic 500 Internal Server Error response
 // to the user
 func (app *Application) serverError(w http.ResponseWriter, r *http.Request, err error) {
-	app.logger.Error(err.Error(), "method", r.Method, "url", r.URL.RequestURI())
+	app.logger.Error(
+		err.Error(),
+		"method",
+		r.Method,
+		"url",
+		r.URL.RequestURI(),
+		"trace",
+		debug.Stack(),
+	)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
