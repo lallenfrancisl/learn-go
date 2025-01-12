@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/lallenfrancisl/snippetbox/internal/models"
 )
 
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
@@ -40,10 +43,21 @@ func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := fmt.Sprintf("Snippet of id %d", id)
-	w.Write([]byte(msg))
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientError(w, http.StatusNotFound)
+		} else {
+			app.serverError(w, r, err)
+		}
 
-	app.logger.Info("GET /snippets/{id}")
+		return
+	}
+
+	app.logger.Info(fmt.Sprintf("GET /snippets/%d", id))
+
+	msg := fmt.Sprintf("%+v", snippet)
+	w.Write([]byte(msg))
 }
 
 // Create a new snippet
@@ -52,7 +66,7 @@ func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	content := "Snippet test content"
 	expires := 7
 
-	id, err :=	app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, r, err)
 

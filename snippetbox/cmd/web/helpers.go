@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"runtime/debug"
 )
@@ -22,5 +23,7 @@ func (app *Application) serverError(w http.ResponseWriter, r *http.Request, err 
 
 // Sends a specific status code and corresponding description to the user
 func (app *Application) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
+	text := fmt.Sprintf("%d %s", status, http.StatusText(status))
+	app.logger.Error(text)
+	http.Error(w, text, status)
 }
