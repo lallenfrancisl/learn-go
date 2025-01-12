@@ -8,6 +8,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/lallenfrancisl/snippetbox/internal"
+	"github.com/lallenfrancisl/snippetbox/internal/models"
 )
 
 type Config struct {
@@ -17,7 +18,8 @@ type Config struct {
 }
 
 type Application struct {
-	logger *log.Logger
+	logger   *log.Logger
+	snippets *models.SnippetRepo
 }
 
 var cfg Config
@@ -29,18 +31,21 @@ func main() {
 
 	flag.Parse()
 
-	app := Application{
-		logger: log.New(),
-	}
+	logger := log.New()
 
 	db, err := openDB(cfg.dsn)
 	if err != nil {
-		app.logger.Fatal(err.Error())
+		logger.Fatal(err.Error())
 
 		return
 	}
 
 	defer db.Close()
+
+	app := Application{
+		logger:   logger,
+		snippets: &models.SnippetRepo{DB: db},
+	}
 
 	app.logger.Info(fmt.Sprintf("server started at %s", cfg.addr))
 
