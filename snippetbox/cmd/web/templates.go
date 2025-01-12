@@ -2,6 +2,7 @@ package main
 
 import "github.com/lallenfrancisl/snippetbox/internal/models"
 
-type viewSnippetData struct {
-    Snippet models.Snippet
+type templateData struct {
+	Snippet  models.Snippet
+	Snippets []models.Snippet
 }
