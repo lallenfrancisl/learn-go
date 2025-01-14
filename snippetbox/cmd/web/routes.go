@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"github.com/justinas/alice"
+	"net/http"
+)
 
 func (app *Application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir(cfg.assets))
@@ -11,5 +14,7 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("GET /snippets/{id}", app.snippetView)
 	mux.HandleFunc("POST /snippets", app.snippetCreate)
 
-	return app.recoverPanic(app.logRequest(commonHeaders(mux)))
+	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+
+	return standard.Then(mux)
 }
