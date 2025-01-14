@@ -10,7 +10,7 @@ import (
 )
 
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
-	app.logger.Info("GET /")
+	panic("oops! something went wrong")
 
 	snippets, err := app.snippets.Latest()
 	if err != nil {
@@ -63,8 +63,6 @@ func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	app.logger.Info("POST /snippets")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippets/%d", id), http.StatusSeeOther)
 }
