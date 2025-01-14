@@ -10,7 +10,6 @@ import (
 )
 
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Server", "Go")
 	app.logger.Info("GET /")
 
 	snippets, err := app.snippets.Latest()
