@@ -51,6 +51,8 @@ func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 // Create a new snippet
 func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4096)
+
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
