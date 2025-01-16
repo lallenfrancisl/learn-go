@@ -1,10 +1,12 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"fmt"
 	"html/template"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -22,9 +24,9 @@ type Config struct {
 }
 
 type Application struct {
-	logger        *log.Logger
-	snippets      *models.SnippetRepo
-	templateCache map[string]*template.Template
+	logger         *log.Logger
+	snippets       *models.SnippetRepo
+	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
 }
 
@@ -60,15 +62,27 @@ func main() {
 	sessionManager.Lifetime = 12 * time.Hour
 
 	app := &Application{
-		logger:        logger,
-		snippets:      &models.SnippetRepo{DB: db},
-		templateCache: templateCache,
+		logger:         logger,
+		snippets:       &models.SnippetRepo{DB: db},
+		templateCache:  templateCache,
 		sessionManager: sessionManager,
+	}
+
+	server := &http.Server{
+		Addr:     cfg.addr,
+		Handler:  app.routes(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig: &tls.Config{
+			CurvePreferences: []tls.CurveID{
+				tls.X25519,
+				tls.CurveP256,
+			},
+		},
 	}
 
 	app.logger.Info(fmt.Sprintf("server started at %s", cfg.addr))
 
-	err = http.ListenAndServe(cfg.addr, app.routes())
+	err = server.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 
 	if err != nil {
 		app.logger.Fatal(err.Error())
