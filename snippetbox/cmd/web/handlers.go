@@ -55,7 +55,7 @@ func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 	validated := validateCreateSnippetForm(r)
 
-	if len(validated.FieldErrors) > 0 {
+	if !validated.Valid() {
 		data := newTemplateData()
 		data.Form = validated
 		app.render(
