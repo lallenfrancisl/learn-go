@@ -53,24 +53,21 @@ func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 4096)
 
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+	validated := validateCreateSnippetForm(r)
+
+	if len(validated.FieldErrors) > 0 {
+		data := newTemplateData()
+		data.Form = validated
+		app.render(
+			w, r, http.StatusUnprocessableEntity, "create.tmpl.html", data,
+		)
 
 		return
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-
-		return
-	}
-
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(
+		validated.Title, validated.Content, validated.Expires,
+	)
 	if err != nil {
 		app.serverError(w, r, err)
 
@@ -82,6 +79,7 @@ func (app *Application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createSnippetPage(w http.ResponseWriter, r *http.Request) {
 	data := newTemplateData()
+	data.Form = createSnippetForm{Expires: 1}
 
 	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
