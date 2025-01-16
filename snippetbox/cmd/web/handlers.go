@@ -89,3 +89,33 @@ func (app *Application) createSnippetPage(w http.ResponseWriter, r *http.Request
 
 	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
+
+func (app *Application) userSignupPage(
+	w http.ResponseWriter, r *http.Request,
+) {
+	fmt.Fprintln(w, "Display a form for signing up users")
+}
+
+func (app *Application) createUser(
+	w http.ResponseWriter, r *http.Request,
+) {
+	fmt.Fprintln(w, "Create a user in the database")
+}
+
+func (app *Application) userLoginPage(
+	w http.ResponseWriter, r *http.Request,
+) {
+	fmt.Fprintln(w, "Show a login page")
+}
+
+func (app *Application) loginUser(
+	w http.ResponseWriter, r *http.Request,
+) {
+	fmt.Fprintln(w, "Login an user")
+}
+
+func (app *Application) logoutUser(
+	w http.ResponseWriter, r *http.Request,
+) {
+	fmt.Fprintln(w, "Logout the user")
+}

@@ -26,6 +26,7 @@ type Config struct {
 type Application struct {
 	logger         *log.Logger
 	snippets       *models.SnippetRepo
+	users          *models.UserRepo
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
 }
@@ -64,6 +65,7 @@ func main() {
 	app := &Application{
 		logger:         logger,
 		snippets:       &models.SnippetRepo{DB: db},
+		users:          &models.UserRepo{DB: db},
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
 	}
