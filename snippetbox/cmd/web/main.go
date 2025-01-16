@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/lallenfrancisl/snippetbox/internal"
 	"github.com/lallenfrancisl/snippetbox/internal/models"
@@ -22,6 +25,7 @@ type Application struct {
 	logger        *log.Logger
 	snippets      *models.SnippetRepo
 	templateCache map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
 
 var cfg Config
@@ -51,10 +55,15 @@ func main() {
 		return
 	}
 
-	app := Application{
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
+	app := &Application{
 		logger:        logger,
 		snippets:      &models.SnippetRepo{DB: db},
 		templateCache: templateCache,
+		sessionManager: sessionManager,
 	}
 
 	app.logger.Info(fmt.Sprintf("server started at %s", cfg.addr))
