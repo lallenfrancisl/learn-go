@@ -78,6 +78,9 @@ func main() {
 				tls.CurveP256,
 			},
 		},
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	app.logger.Info(fmt.Sprintf("server started at %s", cfg.addr))
