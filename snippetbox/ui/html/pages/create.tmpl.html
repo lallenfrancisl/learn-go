@@ -2,6 +2,8 @@
 
 {{define "main"}}
 <form action='/snippets' method='POST'>
+    {{template "csrf" .}}
+
     <div>
         <label>Title:</label>
         {{with .Form.FieldErrors.title}}

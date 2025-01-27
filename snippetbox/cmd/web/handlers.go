@@ -186,7 +186,7 @@ func (app *Application) loginUser(
 	}
 
 	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
-	http.Redirect(w, r, "/snippets", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (app *Application) logoutUser(

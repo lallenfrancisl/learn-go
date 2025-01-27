@@ -2,6 +2,8 @@
 
 {{define "main"}}
 <form action='/users/signup' method='POST' novalidate>
+    {{template "csrf" .}}
+
     <div>
         <label>Name:</label>
         {{with .Form.FieldErrors.name}}

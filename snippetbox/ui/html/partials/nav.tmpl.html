@@ -11,6 +11,8 @@
         <!-- Toggle the links based on authentication status -->
         {{if .IsAuthenticated}}
             <form action='/users/logout' method='POST'>
+                {{template "csrf" .}}
+
                 <button>Logout</button>
             </form>
         {{else}}
