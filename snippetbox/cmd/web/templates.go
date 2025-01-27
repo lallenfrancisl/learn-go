@@ -10,12 +10,12 @@ import (
 )
 
 type templateData struct {
-	CurrentYear         int
-	Snippet             models.Snippet
-	Snippets            []models.Snippet
-	Form                any
-	Flash               string
-	AuthenticatedUserID int
+	CurrentYear     int
+	Snippet         models.Snippet
+	Snippets        []models.Snippet
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func humanDate(t time.Time) string {
@@ -62,11 +62,11 @@ func newTemplateCache() (map[string]*template.Template, error) {
 
 func (app *Application) newTemplateData(r *http.Request) templateData {
 	return templateData{
-		CurrentYear:         time.Now().Year(),
-		Flash:               app.sessionManager.PopString(r.Context(), "flash"),
-		AuthenticatedUserID: app.sessionManager.GetInt(r.Context(), "authenticatedUserID"),
+		CurrentYear:     time.Now().Year(),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
 
 		// Using login form as a placeholder form
-		Form:                userLoginForm{},
+		Form: userLoginForm{},
 	}
 }
