@@ -26,6 +26,10 @@
       {{template "nav" .}}
     </header>
     <main>
+      {{range .Form.FormErrors}}
+          <div class='error'>{{.}}</div>
+      {{end}}
+
       {{with .Flash}}
         <div class='flash'>{{.}}</div>
       {{end}}

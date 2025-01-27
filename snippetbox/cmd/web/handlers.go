@@ -113,10 +113,6 @@ func (app *Application) createUser(
 	form := app.validateUserSignupForm(r)
 
 	if !form.Valid() {
-		if len(form.FieldErrors["form"]) > 0 {
-			data.Flash = form.FieldErrors["form"]
-		}
-
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl.html", data)
 
@@ -142,16 +138,55 @@ func (app *Application) createUser(
 	http.Redirect(w, r, "/users/login", http.StatusSeeOther)
 }
 
+type userLoginForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *Application) userLoginPage(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	fmt.Fprintln(w, "Show a login page")
+	data := app.newTemplateData(r)
+	data.Form = userLoginForm{}
+	app.render(w, r, http.StatusOK, "login.tmpl.html", data)
 }
 
 func (app *Application) loginUser(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	fmt.Fprintln(w, "Login an user")
+	data := app.newTemplateData(r)
+
+	form := app.validateLoginUserForm(r)
+	if !form.Valid() {
+		data.Form = form
+		app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl.html", data)
+
+		return
+	}
+
+	id, err := app.users.Authenticate(form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddFormError("Email or password is incorrect")
+			data.Form = form
+			app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl.html", data)
+		} else {
+			app.serverError(w, r, err)
+		}
+
+		return
+	}
+
+	err = app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, r, err)
+
+		return
+	}
+
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+	http.Redirect(w, r, "/snippets", http.StatusSeeOther)
 }
 
 func (app *Application) logoutUser(

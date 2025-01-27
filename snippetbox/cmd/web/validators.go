@@ -63,7 +63,7 @@ func (app *Application) validateUserSignupForm(r *http.Request) (data userSignup
 	err := app.decodePostForm(r, &form)
 
 	if err != nil {
-		form.AddFieldError("form", "Cannot parse form")
+		form.AddFormError("Cannot parse form")
 
 		return form
 	}
@@ -87,6 +87,32 @@ func (app *Application) validateUserSignupForm(r *http.Request) (data userSignup
 	form.CheckField(
 		validator.MinChars(form.Password, 8),
 		"password", "This field must be at least 8 characters long",
+	)
+
+	return form
+}
+
+func (app *Application) validateLoginUserForm(r *http.Request) userLoginForm {
+	form := userLoginForm{}
+
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		form.AddFormError("Cannot parse form")
+
+		return form
+	}
+
+	form.CheckField(
+		validator.NotBlank(form.Email),
+		"email", "This field cannot be blank",
+	)
+	form.CheckField(
+		validator.Matches(form.Email, validator.EmailRX),
+		"email", "This field must be a valid email address",
+	)
+	form.CheckField(
+		validator.NotBlank(form.Password),
+		"password", "This field cannot be blank",
 	)
 
 	return form
