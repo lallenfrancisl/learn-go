@@ -2,9 +2,13 @@
 <nav>
   <a href="/">Home</a>
   <a href="/snippets">Create snippet</a>
-  <a href="/users/login">Login</a>
-  <form action="/users/logout" method="POST">
-    <button>Logout</button>
-  </form>
+  {{if .AuthenticatedUserID }}
+    <form action="/users/logout" method="POST">
+      <button>Logout</button>
+    </form>
+
+    {{else}}
+    <a href="/users/login">Login</a>
+  {{end}}
 </nav>
 {{end}}
