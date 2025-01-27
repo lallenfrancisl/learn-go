@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/lallenfrancisl/snippetbox/internal/models"
+	"github.com/lallenfrancisl/snippetbox/internal/validator"
 )
 
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +45,7 @@ func (app *Application) snippetView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := app.newTemplateData(r)
-	data.Snippet = snippet 
+	data.Snippet = snippet
 
 	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }
@@ -90,16 +91,55 @@ func (app *Application) createSnippetPage(w http.ResponseWriter, r *http.Request
 	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
 
+type userSignupForm struct {
+	Name                string `form:"name"`
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *Application) userSignupPage(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	fmt.Fprintln(w, "Display a form for signing up users")
+	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
+	app.render(w, r, http.StatusOK, "signup.tmpl.html", data)
 }
 
 func (app *Application) createUser(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	fmt.Fprintln(w, "Create a user in the database")
+	data := app.newTemplateData(r)
+	form := app.validateUserSignupForm(r)
+
+	if !form.Valid() {
+		if len(form.FieldErrors["form"]) > 0 {
+			data.Flash = form.FieldErrors["form"]
+		}
+
+		data.Form = form
+		app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl.html", data)
+
+		return
+	}
+
+	err := app.users.Insert(form.Name, form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.AddFieldError("email", "Email address is already in use")
+
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl.html", data)
+		} else {
+			app.serverError(w, r, err)
+		}
+
+		return
+	}
+
+	app.sessionManager.Put(r.Context(), "flash", "Your signup was successful. Please log in.")
+	http.Redirect(w, r, "/users/login", http.StatusSeeOther)
 }
 
 func (app *Application) userLoginPage(

@@ -57,3 +57,37 @@ func validateCreateSnippetForm(r *http.Request) (data createSnippetForm) {
 
 	return form
 }
+
+func (app *Application) validateUserSignupForm(r *http.Request) (data userSignupForm) {
+	form := userSignupForm{}
+	err := app.decodePostForm(r, &form)
+
+	if err != nil {
+		form.AddFieldError("form", "Cannot parse form")
+
+		return form
+	}
+
+	form.CheckField(
+		validator.NotBlank(form.Name),
+		"name", "This field cannot be blank",
+	)
+	form.CheckField(
+		validator.NotBlank(form.Email),
+		"email", "This field cannot be blank",
+	)
+	form.CheckField(
+		validator.Matches(form.Email, validator.EmailRX),
+		"email", "This field must be a valid email address",
+	)
+	form.CheckField(
+		validator.NotBlank(form.Password),
+		"password", "This field cannot be blank",
+	)
+	form.CheckField(
+		validator.MinChars(form.Password, 8),
+		"password", "This field must be at least 8 characters long",
+	)
+
+	return form
+}
