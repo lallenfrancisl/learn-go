@@ -18,6 +18,12 @@ type User struct {
 	Created        time.Time
 }
 
+type UserRepoInterface interface {
+	Insert(name, email, password string) error
+	Authenticate(email, password string) (int, error)
+	Exists(id int) (bool, error)
+}
+
 type UserRepo struct {
 	DB *sql.DB
 }
@@ -57,7 +63,7 @@ func (r *UserRepo) Authenticate(email, password string) (int, error) {
 	stmt := `
 		SELECT id, hashed_password FROM users WHERE email = ?
 	`
-	
+
 	err := r.DB.QueryRow(stmt, email).Scan(&id, &hashedPassword)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
