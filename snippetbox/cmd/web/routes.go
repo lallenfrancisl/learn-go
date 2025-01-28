@@ -12,6 +12,7 @@ func (app *Application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.HandleFunc("GET /ping", ping)
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, app.noSurf, app.authenticate)
 	protected := dynamic.Append(app.requireAuthentication)

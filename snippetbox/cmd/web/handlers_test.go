@@ -33,3 +33,15 @@ func TestPing(t *testing.T) {
 	body = bytes.TrimSpace(body)
 	assert.Equal(t, string(body), "OK")
 }
+
+func TestPingE2E(t *testing.T) {
+	app := newTestApplication()
+
+	ts := newTestServer(app.routes())
+	defer ts.Close()
+
+	statusCode, _, body := ts.get(t, "/ping")
+
+	assert.Equal(t, statusCode, http.StatusOK)
+	assert.Equal(t, string(body), "OK")
+}
