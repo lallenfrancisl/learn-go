@@ -10,6 +10,10 @@ import (
 	"github.com/lallenfrancisl/snippetbox/internal/validator"
 )
 
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func (app *Application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
