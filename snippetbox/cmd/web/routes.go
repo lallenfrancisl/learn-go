@@ -1,12 +1,14 @@
 package main
 
 import (
-	"github.com/justinas/alice"
 	"net/http"
+
+	"github.com/justinas/alice"
+	"github.com/lallenfrancisl/snippetbox/ui"
 )
 
 func (app *Application) routes() http.Handler {
-	fileServer := http.FileServer(http.Dir(cfg.assets))
+	fileServer := http.FileServerFS(ui.Files)
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
