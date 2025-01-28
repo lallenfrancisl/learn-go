@@ -42,7 +42,7 @@ func main() {
 
 	flag.Parse()
 
-	logger := log.New()
+	logger := log.New(nil)
 
 	db, err := openDB(cfg.dsn)
 	if err != nil {
