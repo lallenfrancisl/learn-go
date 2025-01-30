@@ -90,7 +90,7 @@ func (app *application) readJSON(
 	}
 
 	err = dec.Decode(&struct{}{})
-	if err != nil {
+	if err != io.EOF {
 		return errors.New("body must only contain a single JSON value")
 	}
 
