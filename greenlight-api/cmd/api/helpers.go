@@ -20,11 +20,6 @@ func (app *application) readIDParams(r *http.Request) (int64, error) {
 	return id, nil
 }
 
-func (app *application) serverError(w http.ResponseWriter, err error) {
-	app.logger.Println(err)
-	http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
-}
-
 type envelope map[string]interface{}
 
 func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
