@@ -25,7 +25,9 @@ func (app *application) serverError(w http.ResponseWriter, err error) {
 	http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 }
 
-func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
+type envelope map[string]interface{}
+
+func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	var js []byte
 	var err error
 
