@@ -1,0 +1,9 @@
+services:
+  postgresql:
+    image: postgres:17.2
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
