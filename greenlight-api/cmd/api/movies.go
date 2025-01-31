@@ -5,19 +5,31 @@ import (
 	"time"
 
 	"github.com/lallenfrancisl/greenlight-api/internal/data"
+	"github.com/lallenfrancisl/greenlight-api/internal/validator"
 )
 
+type createMoviePayload struct {
+	Title   string       `json:"title"`
+	Year    int32        `json:"year"`
+	Runtime data.Runtime `json:"runtime"`
+	Genres  []string     `json:"genres"`
+}
+
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Title   string       `json:"title"`
-		Year    int32        `json:"year"`
-		Runtime data.Runtime `json:"runtime"`
-		Genres  []string     `json:"genres"`
-	}
+	var input createMoviePayload
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+
+		return
+	}
+
+	v := validator.New()
+	app.validateCreateMoviePayload(v, input)
+
+	if !v.Valid() {
+		app.validationFailedResponse(w, r, v.Errors)
 
 		return
 	}

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/lallenfrancisl/greenlight-api/internal/validator"
 )
 
 // Generic function to log a message
@@ -42,4 +44,11 @@ func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+func (app *application) validationFailedResponse(
+	w http.ResponseWriter, r *http.Request,
+	errs validator.ValidationErrors,
+) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, errs)
 }

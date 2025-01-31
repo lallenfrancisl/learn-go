@@ -7,8 +7,10 @@ var (
 )
 
 type Validator struct {
-	Errors map[string]string
+	Errors ValidationErrors
 }
+
+type ValidationErrors map[string]string
 
 func New() *Validator {
 	return &Validator{Errors: make(map[string]string)}
@@ -58,4 +60,44 @@ func Unique(values []string) bool {
 	}
 
 	return len(values) == len(uniqueValues)
+}
+
+// Returns true if value is not blank
+func NotBlank(value string) bool {
+	return value != ""
+}
+
+// Returns true when `value` is less than or equal to `limit`
+func Max(value, limit int) bool {
+	return value <= limit
+}
+
+// Returns true when `value` is more than or equal to `limit`
+func Min(value, limit int) bool {
+	return value >= limit
+}
+
+// Returns true when `value` is more than `limit`
+func GreaterThan(value, limit int) bool {
+	return value > limit
+}
+
+// Returns true when `value` is less than `limit`
+func LessThan(value, limit int) bool {
+	return value < limit
+}
+
+// Returns true when length of `value` is less than or equal to limit
+func MaxLen(value string, limit int) bool {
+	return len(value) <= limit
+}
+
+// Returns true when length of `value` is more than or equal to limit
+func MinLen(value string, limit int) bool {
+	return len(value) >= limit
+}
+
+// Returns true when `value` is equal to `expected`
+func Equal(value, expected string) bool {
+	return value == expected
 }
