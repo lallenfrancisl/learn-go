@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -34,7 +35,27 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, envelope{"movie": input}, nil)
+	movie := data.Movie{
+		Title:   input.Title,
+		Year:    input.Year,
+		Runtime: input.Runtime,
+		Genres:  input.Genres,
+	}
+
+	err = app.repo.Movies.Insert(&movie)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
