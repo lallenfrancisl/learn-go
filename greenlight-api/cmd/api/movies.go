@@ -86,3 +86,60 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 }
+
+func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParams(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+
+		return
+	}
+
+	var input createMoviePayload
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+
+	validator := validator.New()
+	app.validateCreateMoviePayload(validator, input)
+
+	if !validator.Valid() {
+		app.validationFailedResponse(w, r, validator.Errors)
+
+		return
+	}
+
+	movie, err := app.repo.Movies.Get(id)
+	if err != nil {
+		if errors.Is(err, data.ErrRecordNotFound) {
+			app.notFoundResponse(w, r)
+		}
+
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+
+	movie.Title = input.Title
+	movie.Year = input.Year
+	movie.Runtime = input.Runtime
+	movie.Genres = input.Genres
+
+	err = app.repo.Movies.Update(movie)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+}
