@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/lallenfrancisl/greenlight-api/internal/data"
 	"github.com/lallenfrancisl/greenlight-api/internal/validator"
@@ -66,13 +66,17 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	movie := data.Movie{
-		ID:        id,
-		CreatedAt: time.Now(),
-		Title:     "Maheshinte Prathikaram",
-		Runtime:   102,
-		Genres:    []string{"drama", "romance", "naturalism"},
-		Version:   1,
+	movie, err := app.repo.Movies.Get(id)
+	if err != nil {
+		if errors.Is(err, data.ErrRecordNotFound) {
+			app.notFoundResponse(w, r)
+
+			return
+		}
+
+		app.serverErrorResponse(w, r, err)
+
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
