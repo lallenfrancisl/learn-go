@@ -195,14 +195,8 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-type listMoviesQueryParams struct {
-	Title  string   `json:"title"`
-	Genres []string `json:"genres"`
-	data.Filters
-}
-
 func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
-	var input listMoviesQueryParams
+	var input data.MovieFilter
 
 	v := validator.New()
 	qs := r.URL.Query()
@@ -213,22 +207,28 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 	input.PageSize = app.readInt(qs, "page_size", 20, v)
 	input.Sort = app.readString(qs, "sort", "id")
 
-	if !v.Valid() {
-		app.validationFailedResponse(w, r, v.Errors)
-
-		return
-	}
-
-	input.Filters.SortSafelist = []string{
+	input.BaseFilter.SortSafelist = []string{
 		"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime",
 	}
 
-	data.ValidateFilters(v, input.Filters)
+	data.ValidateFilters(v, input.BaseFilter)
 	if !v.Valid() {
 		app.validationFailedResponse(w, r, v.Errors)
 
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, envelope{"movies": input}, nil)
+	movies, err := app.repo.Movies.GetAll(input)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"movies": movies}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
 }
