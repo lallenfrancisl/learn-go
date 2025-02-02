@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/lallenfrancisl/greenlight-api/internal/validator"
 )
 
 func (app *application) readIDParams(r *http.Request) (int64, error) {
@@ -95,4 +98,61 @@ func (app *application) readJSON(
 	}
 
 	return nil
+}
+
+// Returns a string value from the query string or the provided defaultValue
+// if no matching key could be found
+func (app *application) readString(
+	qs url.Values, key string, defaultValue string,
+) string {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	return s
+}
+
+// Returns an integer value from the query or the provided defaultValue if not matching
+// key could be found. If value couldn't be converted to an integer, the error is
+// recorded in the validator provided
+func (app *application) readInt(
+	qs url.Values, key string, defaultValue int, v *validator.Validator,
+) int {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		v.AddError(key, "must be an integer")
+
+		return defaultValue
+	}
+
+	return i
+}
+
+// Reads a string value from the query string and then splits it
+// into a slice on the comma character. If no matching key could be found, it returns
+// the provided default value.
+func (app *application) readCSV(
+	qs url.Values, key string, defaultValue []string,
+) []string {
+	csv := qs.Get(key)
+
+	if csv == "" {
+		return defaultValue
+	}
+
+	values := strings.Split(csv, ",")
+
+	for i, v := range values {
+		values[i] = strings.Trim(v, " \n\t")
+	}
+
+	return values
 }
