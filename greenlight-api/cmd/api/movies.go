@@ -26,20 +26,20 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	v := validator.New()
-	app.validateCreateMoviePayload(v, input)
-
-	if !v.Valid() {
-		app.validationFailedResponse(w, r, v.Errors)
-
-		return
-	}
-
 	movie := data.Movie{
 		Title:   input.Title,
 		Year:    input.Year,
 		Runtime: input.Runtime,
 		Genres:  input.Genres,
+	}
+
+	v := validator.New()
+	data.ValidateMovie(v, movie)
+
+	if !v.Valid() {
+		app.validationFailedResponse(w, r, v.Errors)
+
+		return
 	}
 
 	err = app.repo.Movies.Insert(&movie)
