@@ -87,28 +87,17 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+type updateMoviePayload struct {
+	Title   *string       `json:"title"`
+	Year    *int32        `json:"year"`
+	Runtime *data.Runtime `json:"runtime"`
+	Genres  []string      `json:"genres"`
+}
+
 func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParams(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
-
-		return
-	}
-
-	var input createMoviePayload
-
-	err = app.readJSON(w, r, &input)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-
-		return
-	}
-
-	validator := validator.New()
-	app.validateCreateMoviePayload(validator, input)
-
-	if !validator.Valid() {
-		app.validationFailedResponse(w, r, validator.Errors)
 
 		return
 	}
@@ -124,10 +113,39 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	movie.Title = input.Title
-	movie.Year = input.Year
-	movie.Runtime = input.Runtime
-	movie.Genres = input.Genres
+	var payload updateMoviePayload
+
+	err = app.readJSON(w, r, &payload)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+
+		return
+	}
+
+	if payload.Title != nil {
+		movie.Title = *payload.Title
+	}
+
+	if payload.Year != nil {
+		movie.Year = *payload.Year
+	}
+
+	if payload.Runtime != nil {
+		movie.Runtime = *payload.Runtime
+	}
+
+	if payload.Genres != nil {
+		movie.Genres = payload.Genres
+	}
+
+	validator := validator.New()
+	data.ValidateMovie(validator, *movie)
+
+	if !validator.Valid() {
+		app.validationFailedResponse(w, r, validator.Errors)
+
+		return
+	}
 
 	err = app.repo.Movies.Update(movie)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/lallenfrancisl/greenlight-api/internal/validator"
 	"github.com/lib/pq"
 )
 
@@ -16,6 +17,31 @@ type Movie struct {
 	Runtime   Runtime   `json:"runtime,omitempty"`
 	Genres    []string  `json:"genres,omitempty"`
 	Version   int32     `json:"version"`
+}
+
+func ValidateMovie(v *validator.Validator, movie Movie) {
+	v.Check(validator.NotBlank(
+		movie.Title), "title", "must be provided",
+	)
+	v.Check(
+		validator.MaxLen(movie.Title, 500),
+		"title", "must not be more than 500 characters long",
+	)
+
+	v.Check(!validator.Equal(string(movie.Year), "0"), "year", "must be provided")
+	v.Check(validator.Min(int(movie.Year), 1888), "year", "must be greater than 1888")
+	v.Check(validator.Max(int(movie.Year), time.Now().Year()), "year", "must not be in the future")
+
+	v.Check(!validator.Equal(string(movie.Runtime), "0"), "runtime", "must be provided")
+	v.Check(
+		validator.GreaterThan(int(movie.Runtime), 0),
+		"runtime", "must be a positive integer",
+	)
+
+	v.Check(
+		validator.Min(len(movie.Genres), 1), "genres", "must contain atleast 1 genre",
+	)
+	v.Check(validator.Unique(movie.Genres), "genres", "must not contain duplicate values")
 }
 
 type MovieRepo struct {
