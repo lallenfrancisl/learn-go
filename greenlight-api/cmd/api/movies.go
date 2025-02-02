@@ -149,7 +149,11 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	err = app.repo.Movies.Update(movie)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		if errors.Is(err, data.ErrEditConflict) {
+			app.editConflictResponse(w, r)
+		} else {
+			app.serverErrorResponse(w, r, err)
+		}
 
 		return
 	}
