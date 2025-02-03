@@ -158,16 +158,18 @@ type MovieFilter struct {
 	BaseFilter
 }
 
-func (r *MovieRepo) GetAll(filter MovieFilter) ([]*Movie, error) {
+func (r *MovieRepo) GetAll(filter MovieFilter) ([]*Movie, Metadata, error) {
 	query := fmt.Sprintf(
 		`
-			SELECT id, created_at, title, year, runtime, genres, version
+			SELECT count(*) OVER(), id, created_at, title, year, runtime, genres, version
 			FROM movies
 			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 			AND (genres @> $2 OR $2 = '{}')
 			ORDER BY %s %s, id ASC
+			OFFSET %d LIMIT %d
 		`,
 		filter.SortColumn(), filter.SortDirection(),
+		filter.Offset(), filter.Limit(),
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -177,16 +179,18 @@ func (r *MovieRepo) GetAll(filter MovieFilter) ([]*Movie, error) {
 		ctx, query, filter.Title, pq.Array(filter.Genres),
 	)
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
 	movies := []*Movie{}
+	totalRecords := 0
 
 	for rows.Next() {
 		var movie Movie
 
 		err := rows.Scan(
+			&totalRecords,
 			&movie.ID,
 			&movie.CreatedAt,
 			&movie.Title,
@@ -196,15 +200,17 @@ func (r *MovieRepo) GetAll(filter MovieFilter) ([]*Movie, error) {
 			&movie.Version,
 		)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		movies = append(movies, &movie)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
-	return movies, nil
+	metadata := calculateMetadata(totalRecords, filter.Page, filter.PageSize)
+
+	return movies, metadata, nil
 }
