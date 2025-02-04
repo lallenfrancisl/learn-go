@@ -67,6 +67,11 @@ func NotBlank(value string) bool {
 	return value != ""
 }
 
+// Checks if the value is nil
+func NotNil(value interface{}) bool {
+	return value != nil
+}
+
 // Returns true when `value` is less than or equal to `limit`
 func Max(value, limit int) bool {
 	return value <= limit
