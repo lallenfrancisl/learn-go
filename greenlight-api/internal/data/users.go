@@ -103,7 +103,7 @@ func (r UserRepo) Insert(user *User) error {
 	query := `
         INSERT INTO users (name, email, password_hash, activated)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, crated_at, version
+        RETURNING id, created_at, version
     `
 
 	args := []interface{}{user.Name, user.Email, user.Password.hash, user.Activated}
