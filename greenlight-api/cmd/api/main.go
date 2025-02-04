@@ -4,9 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -62,10 +59,10 @@ func main() {
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	db, err := openDB(cfg)
-	defer db.Close()
 	if err != nil {
 		logger.Fatal(err, nil)
 	}
+	defer db.Close()
 
 	logger.Info("database connection pool established", nil)
 
@@ -75,21 +72,10 @@ func main() {
 		repo:   data.NewRepo(db),
 	}
 
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.config.port),
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		ErrorLog:     log.New(logger, "", 0),
+	err = app.serve()
+	if err != nil {
+		logger.Fatal(err, nil)
 	}
-
-	logger.Info("starting server", map[string]string{
-		"env":  cfg.env,
-		"addr": server.Addr,
-	})
-	err = server.ListenAndServe()
-	logger.Fatal(err, nil)
 }
 
 func openDB(cfg config) (*sql.DB, error) {
