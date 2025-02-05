@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"os"
+	"sync"
 	"time"
 
 	jsonlog "github.com/lallenfrancisl/greenlight-api/internal"
@@ -43,6 +44,7 @@ type application struct {
 	logger *jsonlog.Logger
 	repo   data.Repo
 	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
