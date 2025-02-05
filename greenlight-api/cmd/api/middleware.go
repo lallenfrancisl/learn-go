@@ -51,7 +51,7 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 	}()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !app.config.limiter.enabled {
+		if !app.config.Limiter.Enabled {
 			next.ServeHTTP(w, r)
 
 			return
@@ -68,7 +68,7 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 		if _, found := clients[ip]; !found {
 			clients[ip] = &client{
 				limiter: rate.NewLimiter(
-					rate.Limit(app.config.limiter.rps), app.config.limiter.burst,
+					rate.Limit(app.config.Limiter.RPS), app.config.Limiter.Burst,
 				),
 				lastSeen: time.Now(),
 			}

@@ -9,24 +9,32 @@ import (
 
 	jsonlog "github.com/lallenfrancisl/greenlight-api/internal"
 	"github.com/lallenfrancisl/greenlight-api/internal/data"
+	"github.com/lallenfrancisl/greenlight-api/internal/mailer"
 	_ "github.com/lib/pq"
 )
 
 const version = "1.0.0"
 
 type config struct {
-	port int
-	env  string
-	db   struct {
-		dsn          string
-		maxOpenConns int
-		maxIdleConns int
-		maxIdleTime  string
+	Port int
+	Env  string
+	DB   struct {
+		DSN          string
+		MaxOpenConns int
+		MaxIdleConns int
+		MaxIdleTime  string
 	}
-	limiter struct {
-		rps     float64
-		burst   int
-		enabled bool
+	Limiter struct {
+		RPS     float64
+		Burst   int
+		Enabled bool
+	}
+	Mailer struct {
+		Host     string
+		Port     int
+		Username string
+		Password string
+		Sender   string
 	}
 }
 
@@ -34,27 +42,13 @@ type application struct {
 	config config
 	logger *jsonlog.Logger
 	repo   data.Repo
+	mailer mailer.Mailer
 }
 
 func main() {
 	var cfg config
 
-	flag.IntVar(&cfg.port, "port", 4000, "API server port")
-	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
-	flag.StringVar(
-		&cfg.db.dsn,
-		"db-dsn", "postgres://greenlight:password@localhost/greenlight?sslmode=disable",
-		"PostgreSQL DSN",
-	)
-	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
-	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
-	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
-
-	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
-	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
-	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
-
-	flag.Parse()
+	parseFlags(&cfg)
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
@@ -66,10 +60,20 @@ func main() {
 
 	logger.Info("database connection pool established", nil)
 
+	mailerInst := mailer.New(
+		cfg.Mailer.Host,
+		cfg.Mailer.Port,
+		cfg.Mailer.Username,
+		cfg.Mailer.Password,
+		cfg.Mailer.Sender,
+		logger,
+	)
+
 	app := &application{
 		config: cfg,
 		logger: logger,
 		repo:   data.NewRepo(db),
+		mailer: mailerInst,
 	}
 
 	err = app.serve()
@@ -78,16 +82,46 @@ func main() {
 	}
 }
 
+func parseFlags(cfg *config) {
+	// App
+	flag.IntVar(&cfg.Port, "port", 4000, "API server port")
+	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
+
+	// DB
+	flag.StringVar(
+		&cfg.DB.DSN,
+		"db-dsn", "postgres://greenlight:password@localhost/greenlight?sslmode=disable",
+		"PostgreSQL DSN",
+	)
+	flag.IntVar(&cfg.DB.MaxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
+	flag.IntVar(&cfg.DB.MaxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
+	flag.StringVar(&cfg.DB.MaxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
+
+	// Rate limiter
+	flag.Float64Var(&cfg.Limiter.RPS, "limiter-rps", 2, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.Limiter.Burst, "limiter-burst", 4, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.Limiter.Enabled, "limiter-enabled", true, "Enable rate limiter")
+
+	// Mailer
+	flag.StringVar(&cfg.Mailer.Host, "mailer-host", "", "Mailer hostname")
+	flag.IntVar(&cfg.Mailer.Port, "mailer-port", 587, "Mailer port")
+	flag.StringVar(&cfg.Mailer.Username, "mailer-username", "", "Mailer username")
+	flag.StringVar(&cfg.Mailer.Password, "mailer-password", "", "Mailer password")
+	flag.StringVar(&cfg.Mailer.Sender, "mailer-sender", "", "Mailer sender email id")
+
+	flag.Parse()
+}
+
 func openDB(cfg config) (*sql.DB, error) {
-	db, err := sql.Open("postgres", cfg.db.dsn)
+	db, err := sql.Open("postgres", cfg.DB.DSN)
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(cfg.db.maxOpenConns)
-	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+	db.SetMaxOpenConns(cfg.DB.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.DB.MaxIdleConns)
 
-	duration, err := time.ParseDuration(cfg.db.maxIdleTime)
+	duration, err := time.ParseDuration(cfg.DB.MaxIdleTime)
 	if err != nil {
 		return nil, err
 	}

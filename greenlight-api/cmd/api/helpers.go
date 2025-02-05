@@ -31,7 +31,7 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data envelo
 	var js []byte
 	var err error
 
-	if app.config.env == "development" {
+	if app.config.Env == "development" {
 		js, err = json.MarshalIndent(data, "", "\t")
 	} else {
 		js, err = json.Marshal(data)
