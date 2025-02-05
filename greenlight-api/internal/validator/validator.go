@@ -102,6 +102,11 @@ func MinLen(value string, limit int) bool {
 	return len(value) >= limit
 }
 
+// Returns true when length of `value` is equal to `limit`
+func Len(value string, limit int) bool {
+	return len(value) == limit
+}
+
 // Returns true when `value` is equal to `expected`
 func Equal(value, expected string) bool {
 	return value == expected
