@@ -156,3 +156,16 @@ func (app *application) readCSV(
 
 	return values
 }
+
+// Execute the function in a separate go routine and handle panic
+func (app *application) background(fn func()) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Errorf("%s", err), nil)
+			}
+		}()
+
+		fn()
+	}()
+}
