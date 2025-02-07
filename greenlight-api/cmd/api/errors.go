@@ -77,6 +77,13 @@ func (app *application) userNotActivatedResponse(
 	w http.ResponseWriter, r *http.Request,
 ) {
 	message := "user is not activated, please activate the user"
+	app.errorResponse(w, r, http.StatusForbidden, message)
+}
+
+func (app *application) authenticationRequiredResponse(
+	w http.ResponseWriter, r *http.Request,
+) {
+	message := "you must be authenticated to access this resource"
 	app.errorResponse(w, r, http.StatusUnauthorized, message)
 }
 
