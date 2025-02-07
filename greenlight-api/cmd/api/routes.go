@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/lallenfrancisl/greenlight-api/internal/data"
 )
 
 func (app *application) routes() http.Handler {
@@ -21,27 +22,27 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(
 		http.MethodPost,
 		"/v1/movies",
-		app.requireActivatedUser(app.createMovieHandler),
+		app.requirePermission(data.PermissionMoviesWrite, app.createMovieHandler),
 	)
 	router.HandlerFunc(
 		http.MethodGet,
 		"/v1/movies",
-		app.requireActivatedUser(app.listMoviesHandler),
+		app.requirePermission(data.PermissionMoviesRead, app.listMoviesHandler),
 	)
 	router.HandlerFunc(
 		http.MethodGet,
 		"/v1/movies/:id",
-		app.requireActivatedUser(app.showMovieHandler),
+		app.requirePermission(data.PermissionMoviesRead, app.showMovieHandler),
 	)
 	router.HandlerFunc(
 		http.MethodPatch,
 		"/v1/movies/:id",
-		app.requireActivatedUser(app.updateMovieHandler),
+		app.requirePermission(data.PermissionMoviesWrite, app.updateMovieHandler),
 	)
 	router.HandlerFunc(
 		http.MethodDelete,
 		"/v1/movies/:id",
-		app.requireActivatedUser(app.deleteMovieHandler),
+		app.requirePermission(data.PermissionMoviesDelete, app.deleteMovieHandler),
 	)
 
 	// Users routes
