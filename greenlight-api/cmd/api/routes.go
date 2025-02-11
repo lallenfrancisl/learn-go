@@ -27,12 +27,12 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(
 		http.MethodGet,
 		"/v1/movies",
-		app.requirePermission(data.PermissionMoviesRead, app.listMoviesHandler),
+		app.listMoviesHandler,
 	)
 	router.HandlerFunc(
 		http.MethodGet,
 		"/v1/movies/:id",
-		app.requirePermission(data.PermissionMoviesRead, app.showMovieHandler),
+		app.showMovieHandler,
 	)
 	router.HandlerFunc(
 		http.MethodPatch,
