@@ -54,6 +54,8 @@ func (app *application) routes() http.Handler {
 	)
 
 	return app.recoverPanic(
-		app.enableCORS(app.rateLimit(app.authenticate(router))),
+		app.enableCORS(app.rateLimit(
+			app.logRequest(app.authenticate(router)),
+		)),
 	)
 }

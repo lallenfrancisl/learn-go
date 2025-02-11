@@ -198,3 +198,19 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *application) logRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.logger.Info(
+			"received request",
+			map[string]string{
+				"ip":     r.RemoteAddr,
+				"proto":  r.Proto,
+				"method": r.Method,
+				"uri":    r.URL.RequestURI(),
+			},
+		)
+
+		next.ServeHTTP(w, r)
+	})
+}
