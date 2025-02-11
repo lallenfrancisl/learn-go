@@ -59,7 +59,10 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = app.repo.Permissions.AddForUser(user.ID, "movies:read", "movies:write")
+	err = app.repo.Permissions.AddForUser(
+		user.ID, data.PermissionMoviesRead,
+		data.PermissionMoviesWrite, data.PermissionMoviesDelete,
+	)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 
