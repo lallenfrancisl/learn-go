@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lallenfrancisl/gopi"
 	jsonlog "github.com/lallenfrancisl/greenlight-api/internal"
 	"github.com/lallenfrancisl/greenlight-api/internal/data"
 	"github.com/lallenfrancisl/greenlight-api/internal/mailer"
@@ -45,7 +46,10 @@ type application struct {
 	repo   data.Repo
 	mailer mailer.Mailer
 	wg     sync.WaitGroup
+	docs   *gopi.Gopi
 }
+
+var docs *gopi.Gopi = gopi.New()
 
 func main() {
 	var cfg config
@@ -76,7 +80,28 @@ func main() {
 		logger: logger,
 		repo:   data.NewRepo(db),
 		mailer: mailerInst,
+		docs:   docs,
 	}
+
+	docs.
+		Title("Greenlight movie database RESTful API").
+		Description(`
+			Greenlight is an api for a service like IMDB, where users can
+			add, list and edit details about movies. I built this to learn building
+			web APIs in Go. The api OpenAPI API definition of this was created using 
+			https://github.com/lallenfrancisl/gopi, a tool that I made. And the documentation
+			UI is rendered using https://scalar.com
+		`).
+		Contact(gopi.ContactDef{
+			Name: "Allen Francis",
+		}).
+		Version("1.0.0").
+		DefineTag(gopi.TagDef{
+			Name:        "Movies",
+			Description: "APIs for managing movies",
+		})
+
+	writeDocsFile(docs)
 
 	err = app.serve()
 	if err != nil {

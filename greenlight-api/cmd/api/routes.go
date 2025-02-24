@@ -53,6 +53,9 @@ func (app *application) routes() http.Handler {
 		app.loginHandler,
 	)
 
+	// Docs routes
+	router.HandlerFunc(http.MethodGet, "/v1/docs", app.GetDocs)
+
 	return app.recoverPanic(
 		app.enableCORS(app.rateLimit(
 			app.logRequest(app.authenticate(router)),
