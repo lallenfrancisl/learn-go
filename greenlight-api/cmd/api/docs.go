@@ -29,6 +29,31 @@ func (app *application) GetDocs(w http.ResponseWriter, r *http.Request) {
 }
 
 func Docs() {
+	docs.
+		DefineTag(gopi.TagDef{
+			Name:        "Healthcheck",
+			Description: "Healthcheck routes",
+		}).
+		DefineTag(gopi.TagDef{
+			Name:        "Movies",
+			Description: "APIs for managing movies",
+		}).
+		DefineTag(gopi.TagDef{
+			Name:        "Users",
+			Description: "User managment APIs",
+		})
+
+	docs.Route("/v1/healthcheck").Get().
+		Tags([]string{"Healthcheck"}).
+		Response(http.StatusOK, envelope{
+			"status": "",
+			"system_info": map[string]string{
+				"status":      "available",
+				"environment": "",
+				"version":     "",
+			},
+		})
+
 	docs.Route("/v1/movies").Post().
 		Summary("Create a new movie").
 		Tags([]string{"Movies"}).
@@ -88,6 +113,25 @@ func Docs() {
 			http.StatusOK,
 			envelope{"movies": []data.Movie{}, "metadata": data.Metadata{}},
 		)
+
+	docs.Route("/v1/users").Post().
+		Summary("Create a new user").
+		Tags([]string{"Users"}).
+		Description("Create a new user and start the activation flow").
+		Body(RegisterUserPayload{}).
+		Response(http.StatusOK, envelope{"user": data.User{}})
+
+	docs.Route("/v1/users/{id}/activate").Put().
+		Summary("Activate user").
+		Tags([]string{"Users"}).
+		Body(activateUserPayload{}).
+		Response(http.StatusOK, envelope{"user": data.User{}})
+
+	docs.Route("/v1/users/login").Post().
+		Summary("Login").
+		Tags([]string{"Users"}).
+		Body(loginPayload{}).
+		Response(http.StatusOK, envelope{"credentials": ""})
 }
 
 func writeDocsFile(docs *gopi.Gopi) {

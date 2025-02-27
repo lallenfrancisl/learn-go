@@ -51,6 +51,50 @@
                 },
                 "type": "object"
             },
+            "RegisterUserPayload": {
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "activated": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "activateUserPayload": {
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "createMoviePayload": {
                 "properties": {
                     "genres": {
@@ -69,6 +113,17 @@
                     "year": {
                         "format": "int32",
                         "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "loginPayload": {
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -113,6 +168,46 @@
     },
     "openapi": "3.0.0",
     "paths": {
+        "/v1/healthcheck": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "system_info": {
+                                            "properties": {
+                                                "environment": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "version": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Healthcheck"
+                ]
+            }
+        },
         "/v1/movies": {
             "get": {
                 "operationId": "listAllTheMovies",
@@ -348,13 +443,135 @@
                     "Movies"
                 ]
             }
+        },
+        "/v1/users": {
+            "post": {
+                "description": "Create a new user and start the activation flow",
+                "operationId": "createANewUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterUserPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": ""
+                    }
+                },
+                "summary": "Create a new user",
+                "tags": [
+                    "Users"
+                ]
+            }
+        },
+        "/v1/users/login": {
+            "post": {
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/loginPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "credentials": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": ""
+                    }
+                },
+                "summary": "Login",
+                "tags": [
+                    "Users"
+                ]
+            }
+        },
+        "/v1/users/{id}/activate": {
+            "put": {
+                "operationId": "activateUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/activateUserPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": ""
+                    }
+                },
+                "summary": "Activate user",
+                "tags": [
+                    "Users"
+                ]
+            }
         }
     },
     "tags": [
         {
+            "description": "Healthcheck routes",
+            "externalDocs": {},
+            "name": "Healthcheck"
+        },
+        {
             "description": "APIs for managing movies",
             "externalDocs": {},
             "name": "Movies"
+        },
+        {
+            "description": "User managment APIs",
+            "externalDocs": {},
+            "name": "Users"
         }
     ]
 }
