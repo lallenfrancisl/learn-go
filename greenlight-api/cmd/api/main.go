@@ -95,11 +95,7 @@ func main() {
 		Contact(gopi.ContactDef{
 			Name: "Allen Francis",
 		}).
-		Version("1.0.0").
-		DefineTag(gopi.TagDef{
-			Name:        "Movies",
-			Description: "APIs for managing movies",
-		})
+		Version("1.0.0")
 
 	writeDocsFile(docs)
 

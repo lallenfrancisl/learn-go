@@ -9,11 +9,13 @@ import (
 	"github.com/lallenfrancisl/greenlight-api/internal/validator"
 )
 
+type loginPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var input loginPayload
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {

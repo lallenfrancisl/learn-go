@@ -98,10 +98,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+type activateUserPayload struct {
+	TokenPlaintext string `json:"token"`
+}
+
 func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		TokenPlaintext string `json:"token"`
-	}
+	var input activateUserPayload
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
